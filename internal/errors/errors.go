@@ -8,12 +8,17 @@ import (
 
 // Predefined errors
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("auth not found")
+	ErrUserAlreadyExists  = errors.New("auth already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrSessionNotFound    = errors.New("session not found")
 	ErrInvalidInput       = errors.New("invalid input")
 	ErrInternal           = errors.New("internal error")
+
+	ErrUserAndTaskAlreadyExists = errors.New("user and task already exists")
+	ErrUserAlreadyHasReferrer   = errors.New("user already has referrer")
+	ErrTaskAlreadyCompleted     = errors.New("task already completed")
+	ErrTaskNotFound             = errors.New("task not found")
 )
 
 type AppError struct {
@@ -73,6 +78,14 @@ func FromError(err error) *AppError {
 		return New(http.StatusUnauthorized, "Session not found")
 	case errors.Is(err, ErrInvalidInput):
 		return New(http.StatusBadRequest, "Invalid input")
+	case errors.Is(err, ErrUserAndTaskAlreadyExists):
+		return New(http.StatusConflict, "User and task already exists")
+	case errors.Is(err, ErrUserAlreadyHasReferrer):
+		return New(http.StatusConflict, "User already has referrer")
+	case errors.Is(err, ErrTaskAlreadyCompleted):
+		return New(http.StatusConflict, "Task already completed")
+	case errors.Is(err, ErrTaskNotFound):
+		return New(http.StatusNotFound, "Task not found")
 	default:
 		return New(http.StatusInternalServerError, "Internal server error")
 	}

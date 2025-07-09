@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (s *serv) generateToken(email string, secretKey []byte, duration time.Duration) (string, error) {
+func generateToken(email string, secretKey []byte, duration time.Duration) (string, error) {
 	claims := model.UserClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
@@ -21,7 +21,7 @@ func (s *serv) generateToken(email string, secretKey []byte, duration time.Durat
 	return token.SignedString(secretKey)
 }
 
-func (s *serv) verifyToken(tokenString string, secretKey []byte) (*model.UserClaims, error) {
+func verifyToken(tokenString string, secretKey []byte) (*model.UserClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &model.UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {

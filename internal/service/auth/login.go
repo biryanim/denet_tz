@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"context"
@@ -15,14 +15,14 @@ func (s *serv) Login(ctx context.Context, userLogin *model.UserLogin) (string, e
 		if errors.Is(err, apperrors.ErrUserNotFound) {
 			return "", apperrors.ErrInvalidCredentials
 		}
-		return "", fmt.Errorf("failed to get user: %w", err)
+		return "", fmt.Errorf("failed to get auth: %w", err)
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userLogin.Password)); err != nil {
 		return "", apperrors.ErrInvalidCredentials
 	}
 
-	token, err := s.generateToken(userLogin.Email, s.jwtConfig.TokenSecret(), s.jwtConfig.TokenExpiration())
+	token, err := generateToken(userLogin.Email, s.jwtConfig.TokenSecret(), s.jwtConfig.TokenExpiration())
 	if err != nil {
 		return "", errors.Wrap(err, "failed to generate token")
 	}

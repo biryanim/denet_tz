@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -21,11 +22,13 @@ type jwtConfig struct {
 
 func NewJWTConfig() (config.JWTConfig, error) {
 	tokenSecret := []byte(os.Getenv(jwtTokenSecretKey))
+	fmt.Println(tokenSecret)
 	if len(tokenSecret) == 0 {
 		return nil, errors.New("missing JWT token secret")
 	}
 
 	tokenExp, err := time.ParseDuration(os.Getenv(jwtTokenExpiration))
+	fmt.Println(tokenSecret)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"github.com/biryanim/denet_tz/internal/api/auth"
 	"github.com/biryanim/denet_tz/internal/api/user"
+	"github.com/biryanim/denet_tz/internal/repository/task"
 	"log"
 
 	"github.com/biryanim/denet_tz/internal/client/db"
@@ -13,6 +15,7 @@ import (
 	"github.com/biryanim/denet_tz/internal/repository"
 	userRepo "github.com/biryanim/denet_tz/internal/repository/user"
 	"github.com/biryanim/denet_tz/internal/service"
+	authServ "github.com/biryanim/denet_tz/internal/service/auth"
 	userServ "github.com/biryanim/denet_tz/internal/service/user"
 )
 
@@ -25,9 +28,12 @@ type serviceProvider struct {
 	txManager db.TxManager
 
 	userRepository repository.UserRepository
+	taskRepository repository.TaskRepository
 
+	authService service.AuthService
 	userService service.UserService
 
+	authImpl *auth.Implementation
 	userImpl *user.Implementation
 }
 
@@ -107,12 +113,36 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
+func (s *serviceProvider) TaskRepository(ctx context.Context) repository.TaskRepository {
+	if s.taskRepository == nil {
+		s.taskRepository = task.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.taskRepository
+}
+
+func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if s.authService == nil {
+		s.authService = authServ.NewService(s.UserRepository(ctx), s.TxManager(ctx), s.JWTConfig())
+	}
+
+	return s.authService
+}
+
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userServ.NewService(s.UserRepository(ctx), s.TxManager(ctx))
+		s.userService = userServ.NewUserService(s.UserRepository(ctx), s.TaskRepository(ctx), s.TxManager(ctx))
 	}
 
 	return s.userService
+}
+
+func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {
+	if s.authImpl == nil {
+		s.authImpl = auth.NewImplementation(s.AuthService(ctx))
+	}
+
+	return s.authImpl
 }
 
 func (s *serviceProvider) UserImpl(ctx context.Context) *user.Implementation {

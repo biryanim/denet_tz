@@ -1,7 +1,7 @@
 create table users(
     id int generated always as identity primary key,
-    username varchar(255) unique not null,
-    email varchar(255) not null,
+    username varchar(255)  not null,
+    email varchar(255) unique not null,
     password text not null,
     points int default 0,
     created_at timestamp not null default now(),
@@ -19,8 +19,7 @@ create table tasks (
 create table user_tasks (
   user_id int references users(id),
   task_id int references tasks(id),
-  completed_at timestamp not null default now(),
-  primary key (user_id, task_id)
+  completed_at timestamp not null default now()
 );
 
 create table referrals (

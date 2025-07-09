@@ -35,7 +35,7 @@ func (r *repo) GetByID(ctx context.Context, id int64) (*model.User, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.ErrUserNotFound
 		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get auth: %w", err)
 	}
 
 	return &user, nil
@@ -66,7 +66,7 @@ func (r *repo) GetByEmail(ctx context.Context, email string) (*model.User, error
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.ErrUserNotFound
 		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get auth: %w", err)
 	}
 
 	return &user, nil

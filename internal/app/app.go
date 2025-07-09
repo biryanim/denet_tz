@@ -66,6 +66,27 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initHTTPServer(ctx context.Context) error {
 	router := gin.Default()
 
+	public := router.Group("/")
+	{
+		public.POST("/register", a.serviceProvider.AuthImpl(ctx).Register)
+		public.POST("/login", a.serviceProvider.AuthImpl(ctx).Login)
+	}
+
+	protected := router.Group("/")
+	protected.Use(a.serviceProvider.AuthImpl(ctx).AuthMiddleware())
+	{
+		protected.GET("/users/:id/status", a.serviceProvider.UserImpl(ctx).GetStatus)
+		protected.GET("/users/leaderboard", a.serviceProvider.UserImpl(ctx).GetLeaderboard)
+		protected.POST("/users/:id/task/complete", a.serviceProvider.UserImpl(ctx).CompleteTask)
+		protected.POST("/users/:id/referrer", a.serviceProvider.UserImpl(ctx).AddReferrer)
+	}
+
+	a.httpServer = &http.Server{
+		Addr:    a.serviceProvider.HTTPConfig().Address(),
+		Handler: router,
+	}
+
+	return nil
 }
 
 func (a *App) runHTTPServer() error {

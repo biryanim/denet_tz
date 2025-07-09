@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 func (s *serv) Register(ctx context.Context, userCreate *model.UserCreate) (int64, error) {
 	existingUser, err := s.userRepository.GetByEmail(ctx, userCreate.Info.Email)
 	if err != nil && !errors.Is(err, apperrors.ErrUserNotFound) {
-		return 0, fmt.Errorf("failed to check existing user: %w", err)
+		return 0, fmt.Errorf("failed to check existing auth: %w", err)
 	}
 	if existingUser != nil {
 		return 0, apperrors.ErrUserAlreadyExists
@@ -29,7 +29,7 @@ func (s *serv) Register(ctx context.Context, userCreate *model.UserCreate) (int6
 
 	id, err := s.userRepository.Create(ctx, userCreate)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create user: %w", err)
+		return 0, fmt.Errorf("failed to create auth: %w", err)
 	}
 
 	return id, nil

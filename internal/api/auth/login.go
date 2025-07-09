@@ -1,8 +1,9 @@
-package user
+package auth
 
 import (
 	"github.com/biryanim/denet_tz/internal/api/dto"
 	"github.com/biryanim/denet_tz/internal/converter"
+	apperrors "github.com/biryanim/denet_tz/internal/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -14,10 +15,11 @@ func (i *Implementation) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	token, err := i.authService.Login(c.Request.Context(), converter.FromUserLoginReq(&loginReq))
 
-	token, err := i.userService.Login(c.Request.Context(), converter.FromUserLoginReq(&loginReq))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		appErr := apperrors.FromError(err)
+		c.JSON(appErr.StatusCode, gin.H{"error": appErr.Error()})
 		return
 	}
 

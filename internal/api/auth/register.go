@@ -1,8 +1,9 @@
-package user
+package auth
 
 import (
 	"github.com/biryanim/denet_tz/internal/api/dto"
 	"github.com/biryanim/denet_tz/internal/converter"
+	apperrors "github.com/biryanim/denet_tz/internal/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,9 +16,11 @@ func (i *Implementation) Register(c *gin.Context) {
 		return
 	}
 
-	resp, err := i.userService.Register(c.Request.Context(), converter.FromUserCreateReq(&registerReq))
+	resp, err := i.authService.Register(c.Request.Context(), converter.FromUserCreateReq(&registerReq))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		appErr := apperrors.FromError(err)
+		c.JSON(appErr.StatusCode, gin.H{"error": appErr.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, dto.UserRegisterResponse{ID: resp})
