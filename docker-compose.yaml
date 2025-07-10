@@ -1,4 +1,18 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - local.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      pg:
+        condition: service_healthy
+    volumes:
+      - ./local.env:/app/local.env
+
   pg:
     image: postgres:17.2-alpine3.21
     env_file:
@@ -7,6 +21,11 @@ services:
       - "5432:5432"
     volumes:
       - pg_users_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pg_users_volume:
